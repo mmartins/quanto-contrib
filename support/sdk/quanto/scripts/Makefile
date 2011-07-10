@@ -11,7 +11,6 @@ all: $(FILES)
 clean:
 	rm $(FILES) *.pyc
 QuantoLogEntry.py: $(QUANTO_ROOT)/tos/lib/quanto/QuantoLog/RawUartMsg.h 
-	which $(GCC)
 	mig $(MIGFLAGS) -o $@ -python-classname=QuantoLogEntry python \
               $(QUANTO_ROOT)/tos/lib/quanto/QuantoLog/RawUartMsg.h \
               nx_entry_t
