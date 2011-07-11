@@ -1,5 +1,5 @@
 configuration HplMsp430InterruptP {
-#ifdef __msp430_have_port1
+#if defined(__msp430_have_port1) || defined(__MSP430_HAS_PORT1__) || defined(__MSP430_HAS_PORT1_R__)
   provides interface HplMsp430Interrupt as Port10;
   provides interface HplMsp430Interrupt as Port11;
   provides interface HplMsp430Interrupt as Port12;
@@ -9,7 +9,7 @@ configuration HplMsp430InterruptP {
   provides interface HplMsp430Interrupt as Port16;
   provides interface HplMsp430Interrupt as Port17;
 #endif
-#ifdef __msp430_have_port2
+#if defined(__msp430_have_port2) || defined(__MSP430_HAS_PORT2__) || defined(__MSP430_HAS_PORT2_R__)
   provides interface HplMsp430Interrupt as Port20;
   provides interface HplMsp430Interrupt as Port21;
   provides interface HplMsp430Interrupt as Port22;
@@ -26,7 +26,7 @@ implementation {
 
     HplMsp430InterruptImplP.CPUResource -> QuantoResourcesC.CPUResource;
 
-#ifdef __msp430_have_port1
+#if defined(__msp430_have_port1) || defined(__MSP430_HAS_PORT1__) || defined(__MSP430_HAS_PORT1_R__)
   Port10 = HplMsp430InterruptImplP.Port10;
   Port11 = HplMsp430InterruptImplP.Port11;
   Port12 = HplMsp430InterruptImplP.Port12;
@@ -36,7 +36,7 @@ implementation {
   Port16 = HplMsp430InterruptImplP.Port16;
   Port17 = HplMsp430InterruptImplP.Port17;
 #endif
-#ifdef __msp430_have_port2
+#if defined(__msp430_have_port2) || defined(__MSP430_HAS_PORT2__) || defined(__MSP430_HAS_PORT2_R__)
   Port20 = HplMsp430InterruptImplP.Port20;
   Port21 = HplMsp430InterruptImplP.Port21;
   Port22 = HplMsp430InterruptImplP.Port22;

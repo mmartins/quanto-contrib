@@ -67,7 +67,9 @@
  * @author: Jonathan Hui <jhui@archedrock.com>
  * @author: Vlado Handziski <handzisk@tkn.tu-berlin.de>
  * @author: Joe Polastre
- * @version $Revision: 1.2 $ $Date: 2009/02/14 00:07:37 $
+ * @author: Rodrigo Fonseca <rfonseca@cs.brown.edu>
+ * @author: Marcelo Martins <martins@cs.brown.edu>
+ * @version $Revision: 1.8 $ $Date: 2011/07/10 20:10:37 $
  */
 
 module HplMsp430Usart1ImplP {
@@ -124,7 +126,7 @@ implementation
   }
 
   async command msp430_uctl_t Usart.getUctl() {
-    return int2uctl(U0CTL);
+    return int2uctl(U1CTL);
   }
 
   async command void Usart.setUtctl(msp430_utctl_t control) {
@@ -388,13 +390,11 @@ implementation
   }
 
   async command void Usart.tx(uint8_t data) {
-    atomic U1TXBUF = data;
+    U1TXBUF = data;
   }
 
   async command uint8_t Usart.rx() {
-    uint8_t value;
-    atomic value = U1RXBUF;
-    return value;
+    return U1RXBUF;
   }
 
 }
