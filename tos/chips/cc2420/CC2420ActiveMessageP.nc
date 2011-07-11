@@ -1,24 +1,32 @@
 /*
- * "Copyright (c) 2005 Stanford University. All rights reserved.
+ * Copyright (c) 2005 Stanford University. All rights reserved.
  *
- * Permission to use, copy, modify, and distribute this software and
- * its documentation for any purpose, without fee, and without written
- * agreement is hereby granted, provided that the above copyright
- * notice, the following two paragraphs and the author appear in all
- * copies of this software.
- * 
- * IN NO EVENT SHALL STANFORD UNIVERSITY BE LIABLE TO ANY PARTY FOR
- * DIRECT, INDIRECT, SPECIAL, INCIDENTAL, OR CONSEQUENTIAL DAMAGES
- * ARISING OUT OF THE USE OF THIS SOFTWARE AND ITS DOCUMENTATION, EVEN
- * IF STANFORD UNIVERSITY HAS BEEN ADVISED OF THE POSSIBILITY OF SUCH
- * DAMAGE.
- * 
- * STANFORD UNIVERSITY SPECIFICALLY DISCLAIMS ANY WARRANTIES,
- * INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
- * MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.  THE SOFTWARE
- * PROVIDED HEREUNDER IS ON AN "AS IS" BASIS, AND STANFORD UNIVERSITY
- * HAS NO OBLIGATION TO PROVIDE MAINTENANCE, SUPPORT, UPDATES,
- * ENHANCEMENTS, OR MODIFICATIONS."
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
+ *
+ * - Redistributions of source code must retain the above copyright
+ *   notice, this list of conditions and the following disclaimer.
+ * - Redistributions in binary form must reproduce the above copyright
+ *   notice, this list of conditions and the following disclaimer in the
+ *   documentation and/or other materials provided with the
+ *   distribution.
+ * - Neither the name of the copyright holder nor the names of
+ *   its contributors may be used to endorse or promote products derived
+ *   from this software without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+ * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+ * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
+ * FOR A PARTICULAR PURPOSE ARE DISCLAIMED.  IN NO EVENT SHALL
+ * THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT,
+ * INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+ * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+ * HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,
+ * STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED
+ * OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
 
@@ -29,9 +37,10 @@
  * of the data payload.
  *
  * @author Philip Levis
- * @version $Revision: 1.2 $ $Date: 2009/02/14 00:07:37 $
+ * @version $Revision: 1.22 $ $Date: 2010-06-29 22:07:44 $
  */
  
+#include <Ieee154.h> 
 #include "CC2420.h"
 
 module CC2420ActiveMessageP @safe() {
@@ -53,10 +62,26 @@ module CC2420ActiveMessageP @safe() {
     interface CC2420Config;
     interface ActiveMessageAddress;
     interface RadioBackoff as SubBackoff;
+    interface Resource as RadioResource;
+    interface Leds;
     interface SingleActivityResource as CPUResource;
   }
 }
 implementation {
+  uint16_t pending_length;
+  message_t *pending_message = NULL;
+  /***************** Resource event  ****************/
+  event void RadioResource.granted() {
+    uint8_t rc;
+    cc2420_header_t* header = call CC2420PacketBody.getHeader( pending_message );
+
+    signal SendNotifier.aboutToSend[header->type](header->dest, pending_message);
+    rc = call SubSend.send( pending_message, pending_length );
+    if (rc != SUCCESS) {
+      call RadioResource.release();
+      signal AMSend.sendDone[header->type]( pending_message, rc );
+    }
+  }
 
   /***************** AMSend Commands ****************/
   command error_t AMSend.send[am_id_t id](am_addr_t addr,
@@ -73,10 +98,26 @@ implementation {
     header->destpan = call CC2420Config.getPanAddr();
     header->src = call AMPacket.address();
     header->activity = call CPUResource.get();
+    header->fcf |= ( 1 << IEEE154_FCF_INTRAPAN ) |
+      ( IEEE154_ADDR_SHORT << IEEE154_FCF_DEST_ADDR_MODE ) |
+      ( IEEE154_ADDR_SHORT << IEEE154_FCF_SRC_ADDR_MODE ) ;
+    header->length = len + CC2420_SIZE;
     
-    signal SendNotifier.aboutToSend[id](addr, msg);
-    
-    return call SubSend.send( msg, len );
+    if (call RadioResource.immediateRequest() == SUCCESS) {
+      error_t rc;
+      signal SendNotifier.aboutToSend[id](addr, msg);
+      
+      rc = call SubSend.send( msg, len );
+      if (rc != SUCCESS) {
+        call RadioResource.release();
+      }
+
+      return rc;
+    } else {
+      pending_length  = len;
+      pending_message = msg;
+      return call RadioResource.request();
+    }
   }
 
   command error_t AMSend.cancel[am_id_t id](message_t* msg) {
@@ -160,7 +201,7 @@ implementation {
   }
   
   command uint8_t Packet.maxPayloadLength() {
-    return TOSH_DATA_LENGTH;
+    return call SubSend.maxPayloadLength();
   }
   
   command void* Packet.getPayload(message_t* msg, uint8_t len) {
@@ -170,6 +211,7 @@ implementation {
   
   /***************** SubSend Events ****************/
   event void SubSend.sendDone(message_t* msg, error_t result) {
+    call RadioResource.release();
     signal AMSend.sendDone[call AMPacket.type(msg)](msg, result);
   }
 
@@ -242,8 +284,6 @@ implementation {
   async command void RadioBackoff.setCca[am_id_t amId](bool useCca) {
     call SubBackoff.setCca(useCca);
   }
-
-
   
   /***************** Defaults ****************/
   default event message_t* Receive.receive[am_id_t id](message_t* msg, void* payload, uint8_t len) {
@@ -255,6 +295,7 @@ implementation {
   }
 
   default event void AMSend.sendDone[uint8_t id](message_t* msg, error_t err) {
+    call RadioResource.release();
   }
 
   default event void SendNotifier.aboutToSend[am_id_t amId](am_addr_t addr, message_t *msg) {

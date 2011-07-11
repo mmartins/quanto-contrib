@@ -33,7 +33,7 @@
  * Implementation of the receive path for the ChipCon CC2420 radio.
  *
  * @author Jonathan Hui <jhui@archrock.com>
- * @version $Revision: 1.2 $ $Date: 2009/02/14 00:07:37 $
+ * @version $Revision: 1.4 $ $Date: 2009-08-14 20:33:43 $
  */
 
 configuration CC2420ReceiveC {
@@ -77,6 +77,15 @@ implementation {
   CC2420ReceiveP.CC2420PacketBody -> CC2420PacketC;
   CC2420ReceiveP.PacketTimeStamp -> CC2420PacketC;
   CC2420ReceiveP.CC2420Config -> CC2420ControlC;
+
+  CC2420ReceiveP.SECCTRL0 -> Spi.SECCTRL0;
+  CC2420ReceiveP.SECCTRL1 -> Spi.SECCTRL1;
+  CC2420ReceiveP.SRXDEC -> Spi.SRXDEC;
+  CC2420ReceiveP.RXNONCE -> Spi.RXNONCE;
+  CC2420ReceiveP.KEY0 -> Spi.KEY0;
+  CC2420ReceiveP.KEY1 -> Spi.KEY1;
+  CC2420ReceiveP.RXFIFO_RAM -> Spi.RXFIFO_RAM;
+  CC2420ReceiveP.SNOP -> Spi.SNOP;
 
   components QuantoResourcesC;
   CC2420ReceiveP.CPUResource -> QuantoResourcesC.CPUResource;
