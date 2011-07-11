@@ -48,7 +48,8 @@
  * waits to keep the Sensirion happy.
  *
  * @author Gilman Tolle <gtolle@archrock.com>
- * @version $Revision: 1.2 $ $Date: 2009/02/14 00:07:37 $
+ * @author Marcelo Martins <martins@cs.brown.edu>
+ * @version $Revision: 1.5 $ $Date: 2011/07/10 20:21:37 $
  */
 
 generic module SensirionSht11LogicP() {
@@ -78,7 +79,7 @@ implementation {
 
   enum {
     TIMEOUT_RESET = 11,
-    TIMEOUT_14BIT = 250,
+    TIMEOUT_14BIT = 330,
     TIMEOUT_12BIT = 250, //70,
     TIMEOUT_8BIT = 250, //15,
   } sht_timeout_t;
