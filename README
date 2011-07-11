@@ -18,14 +18,12 @@ Using Quanto:
 
    *********************************************************************
    *  The current version in this branch is know to work with a        *
-   *  tinyos-2.x tree as of February 26th, 2009.                       *
+   *  tinyos-2.x tree as of July 10th, 2011.                       *
    *********************************************************************
   
-   We are working making it better track TinyOS releases. For now, to get
-   a snapshot of the TinyOS tree, use the -D option to CVS checkout, e.g.:
+   First of all get the newest TinyOS tree:
 
-   cvs -d :pserver:anonymous@tinyos.cvs.sourceforge.net:/cvsroot/tinyos co \
-       -D 2009-02-26 -d tinyos-2.x-quanto-snapshot tinyos-2.x
+   git clone git://hinrg.cs.jhu.edu/git/tinyos-2.x.svn  tinyos-2.x
 
  * Currently instrumented are TinyOS 2 platforms that use the MSP430
    and the CC2420 (tested on TelosB and Epic)

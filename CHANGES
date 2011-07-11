@@ -1,3 +1,11 @@
+Changes Sunday, Jul 10th, 2011
+Marcelo Martins
+
+Summary
+* Brought the code up to date with current tinyos-2.x HEAD (as of Jul 10th, 2011)
+
+* Added some fixes, mainly for demo applications that became broken with Quanto 1.5
+
 Changes Friday, Feb 13th, 2009
 Rodrigo Fonseca
 
