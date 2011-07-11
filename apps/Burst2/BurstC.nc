@@ -2,7 +2,7 @@
 #include <UserButton.h>
 
 module BurstC {
-    uses interface SingleContext as CPUContext;
+    uses interface SingleActivityResource as CPUResource;
     uses interface Boot;
     uses interface Notify<button_state_t> as UserButtonNotify;
     uses interface QuantoLog;
@@ -40,7 +40,7 @@ implementation {
     atomic {
       int i = 10;
       call A0.set(); // U2.3
-      call CPUContext.set(c);
+      call CPUResource.set(c);
       call A1.set(); // U2.5
       while (i--); // Spin for a bit
       call A0.clr();
@@ -58,6 +58,9 @@ implementation {
   event void QuantoLog.full() {
     call Leds.led1Off();
     call QuantoLog.flush();
+  }
+
+  event void QuantoLog.flushDone() {
   }
 
   event void UserButtonNotify.notify(button_state_t buttonState) {

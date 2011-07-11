@@ -87,6 +87,12 @@ implementation
      call QuantoLog.flush();
   }
 
+  event void QuantoLog.flushDone() {
+  }
+
+  event void QuantoLog.full() {
+  }
+
   //play with LED0
   event void TimerA.fired() {
     bool ledOn = (call Leds.get() & LEDS_LED0);     

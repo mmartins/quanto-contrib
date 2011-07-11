@@ -89,6 +89,9 @@ implementation
   event void QuantoLog.full() {
   }
 
+  event void QuantoLog.flushDone() {
+  }
+
   task void taskA() {
     doWork();
     if (remaining) {

@@ -95,6 +95,9 @@ implementation
      call QuantoLog.flush();
   }
 
+  event void QuantoLog.flushDone() {
+  }
+
   task void send() 
   {
       //act_t current = call CPUResource.get();

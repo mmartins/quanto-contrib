@@ -129,7 +129,7 @@ implementation {
         if (err == SUCCESS) {
             initState();
 #ifdef BOUNCE_LPL_INTERVAL
-            call LowPowerListening.setLocalSleepInterval(BOUNCE_LPL_INTERVAL);
+            call LowPowerListening.setLocalWakeupInterval(BOUNCE_LPL_INTERVAL);
 #endif
             call UserButtonNotify.enable();
         } else {
@@ -151,7 +151,7 @@ implementation {
 
     void send(uint8_t i) {
 #ifdef BOUNCE_LPL_INTERVAL
-        call LowPowerListening.setRxSleepInterval(buffer[i], BOUNCE_LPL_INTERVAL);
+        call LowPowerListening.setRemoteWakeupInterval(buffer[i], BOUNCE_LPL_INTERVAL);
 #endif
         if (call AMSend.send(peer, 
             buffer[i], sizeof(bounce_msg)) != SUCCESS) {

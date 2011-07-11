@@ -75,7 +75,7 @@ implementation {
   event void AMControl.startDone(error_t err) {
     if (err == SUCCESS) {
 #ifdef APP_LPL_INTERVAL
-            call LowPowerListening.setLocalSleepInterval(APP_LPL_INTERVAL);
+            call LowPowerListening.setLocalWakeupInterval(APP_LPL_INTERVAL);
 #endif
       call CPUResource.set(mk_act_local(QUANTO_ACTIVITY(COUNT_TO_LEDS)));
       call MilliTimer.startPeriodic(500);
@@ -103,7 +103,7 @@ implementation {
 
       rcm->counter = counter;
 #ifdef APP_LPL_INTERVAL
-        call LowPowerListening.setRxSleepInterval(&packet, APP_LPL_INTERVAL);
+        call LowPowerListening.setRemoteWakeupInterval(&packet, APP_LPL_INTERVAL);
 #endif
       if (call AMSend.send(AM_BROADCAST_ADDR, &packet, sizeof(radio_count_msg_t)) == SUCCESS) {
 	dbg("RadioCountToLedsC", "RadioCountToLedsC: packet sent.\n", counter);	

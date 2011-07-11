@@ -71,7 +71,7 @@ implementation {
     event void AMControl.startDone(error_t err) {
         if (err == SUCCESS) {
 #ifdef LPL_INTERVAL
-            call LowPowerListening.setLocalSleepInterval(LPL_INTERVAL);
+            call LowPowerListening.setLocalWakeupInterval(LPL_INTERVAL);
 #endif
             call UserButtonNotify.enable();
         } else {
