@@ -44,6 +44,8 @@
  * 
  * @author Kevin Klues (klues@tkn.tu-berlin.de)
  * @author Philip Levis
+ * @author Rodrigo Fonseca (rfonseca@cs.brown.edu)
+ * @author Marcelo Martins (martins@cs.brown.edu)
  */
 
 #include "activity.h"
@@ -89,12 +91,10 @@ implementation {
         post grantedTask();
         return SUCCESS;
       }
-      else {
-        result = call Queue.enqueue(id);
-        if (result == SUCCESS)
-           clientActivity[id] = call CPUResource.get(); //save activity for dequeue
-        return result;
-      }
+      result = call Queue.enqueue(id);
+      if (result == SUCCESS)
+         clientActivity[id] = call CPUResource.get(); //save activity for dequeue
+      return result;
     }
   }
 
@@ -165,7 +165,7 @@ implementation {
   /**
    * Returns whether you are the current owner of the resource or not
    */      
-  async command uint8_t Resource.isOwner[uint8_t id]() {
+  async command bool Resource.isOwner[uint8_t id]() {
     atomic {
       if(resId == id && state == RES_BUSY) return TRUE;
       else return FALSE;

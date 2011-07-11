@@ -106,7 +106,9 @@ implementation {
         state = RES_GRANTING;
         reqResId = id;
       }
-      else {
+      else if (reqResId == id) {
+        return SUCCESS;
+      } else {
         result = call Queue.enqueue(id);
         if (result == SUCCESS)
           clientActivity[id] = call CPUResource.get(); //save context for dequeue
@@ -204,14 +206,14 @@ implementation {
   /**
    * Returns my user id.
    */      
-  async command uint8_t Resource.isOwner[uint8_t id]() {
+  async command bool Resource.isOwner[uint8_t id]() {
     atomic {
       if(resId == id && state == RES_BUSY) return TRUE;
       else return FALSE;
     }
   }
 
-  async command uint8_t ResourceDefaultOwner.isOwner() {
+  async command bool ResourceDefaultOwner.isOwner() {
     atomic return (state == RES_CONTROLLED
             || (resId == default_owner_id
                 && (state == RES_GRANTING || state == RES_IMM_GRANTING)));
