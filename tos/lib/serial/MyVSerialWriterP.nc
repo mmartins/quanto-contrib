@@ -75,7 +75,7 @@ implementation {
          p = (i + pos) % NUM_CLIENTS;
          if (outstanding[p].buf != NULL) {
             break;
-         }     
+         }
       }      
       if (i == NUM_CLIENTS) {
          return i;
@@ -88,14 +88,18 @@ implementation {
    LowerPortWriter.writeDone(uint8_t *buf, error_t result) 
    {
       uint8_t to_signal = NUM_CLIENTS;
-      if (current >= NUM_CLIENTS) {
+      uint8_t nclients;
+      
+      atomic nclients = current;
+
+      if (nclients >= NUM_CLIENTS) {
          return;
       } 
-      if (outstanding[current].buf == buf) {
-         to_signal = current;
-         outstanding[current].buf = NULL;
-         outstanding[current].length = 0;
-         atomic {
+      atomic {
+         if (outstanding[current].buf == buf) {
+            to_signal = current;
+            outstanding[current].buf = NULL;
+            outstanding[current].length = 0;
             current = nextPacket(current);
             if (current < NUM_CLIENTS) {
                call NextSend.postTask(call CPUResource.get());
@@ -114,12 +118,12 @@ implementation {
       //try to send current.
       atomic {
          pos = current;
-      }
-      result = call LowerPortWriter.write(outstanding[pos].buf, 
+         result = call LowerPortWriter.write(outstanding[pos].buf, 
                                           outstanding[pos].length);
+      }
       if (result != SUCCESS) {
-         signal PortWriter.writeDone[pos](outstanding[pos].buf, result);
          atomic {
+            signal PortWriter.writeDone[pos](outstanding[pos].buf, result);
             outstanding[pos].buf = NULL;
             outstanding[pos].length = 0;
             current = nextPacket(pos);
