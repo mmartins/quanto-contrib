@@ -72,6 +72,7 @@ implementation {
       BIND    = 1,
       M_ACT_ADD = 0,
       M_ACT_REM = 1,
+      M_ACT_IDLE = 2,
    };
 
    inline uint8_t ignoreInterrupt(act_t act) {
@@ -318,14 +319,17 @@ implementation {
    }
 
    /* Record the change to a MultiActivityResource.
-    * op can be one of M_ACT_ADDED, M_ACT_REMOVED, M_ACT_IDLE. */
+    * op can be one of M_ACT_ADD, M_ACT_REM, M_ACT_IDLE. */
    void 
    multiActivityRecordChange(uint8_t res_id, act_t activity, uint8_t op)
    {
       uint32_t now = call Counter.get();
-      uint16_t delta;
+      uint16_t delta, w_delta;
+      uint8_t to_report = 0;
       uint8_t n;
-      ActivitySet *as = &m_act_sets[res_id];
+      uint8_t i;
+      uint8_t res;
+      ActivitySet *a_s = &m_act_sets[res_id];
 
       uint16_t node = call ActivityType.getNode(&activity);
       act_type_t act = call ActivityType.getActType(&activity); 
@@ -337,7 +341,7 @@ implementation {
  
       atomic {       
          //Gather stats about last period
-         n = activitySet_numElements(as);
+         n = activitySet_numElements(a_s);
          delta = (uint16_t)(now - m_last_time[res_id]);
          w_delta = delta/n; //policy: equally divide the time since last
                             //change among all activities
@@ -347,7 +351,7 @@ implementation {
          //  (decreasing n here is just an optimization so we don't keep going
          //   after we've seen all elements.)
          for (i = 0; i < ACT_SET_SIZE && n; i++) {
-            if (activitySet_isMember(as, i)) {
+            if (activitySet_isMember(a_s, i)) {
                n--;
                m_time[m_slot][res_id][i] += w_delta;    
             }
@@ -355,12 +359,12 @@ implementation {
          m_last_time[res_id] = now;
 
          //Change the activity set 
-         if (op == M_ACT_ADDED) 
-            activitySet_add(as, act);
-         else if (op == M_ACT_REMOVED)
-            activitySet_remove(as, act);
+         if (op == M_ACT_ADD) 
+            activitySet_add(a_s, act);
+         else if (op == M_ACT_REM)
+            activitySet_remove(a_s, act);
          else if (op == M_ACT_IDLE)
-            activitySet_clear(as);
+            activitySet_clear(a_s);
       
          //see if it is time to report
          to_report = (!m_report_pending && ((now - m_slot_start[m_slot]) > REPORT_INTERVAL) );
@@ -385,14 +389,14 @@ implementation {
    async event void
    MultiActivityResourceTrack.added[uint8_t res_id](act_t activity)
    {
-      multiActivityRecordChange(res_id, activity, M_ACT_ADDED);
+      multiActivityRecordChange(res_id, activity, M_ACT_ADD);
    }
 
   
    async event void
    MultiActivityResourceTrack.removed[uint8_t res_id](act_t activity)
    {
-      multiActivityRecordChange(res_id, activity, M_ACT_REMOVED);
+      multiActivityRecordChange(res_id, activity, M_ACT_REM);
       //record previous state
       //remove
       //check if we have to report

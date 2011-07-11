@@ -212,4 +212,8 @@ implementation {
    default event void QuantoLog.full()
    {
    }
+
+   default event void QuantoLog.flushDone()
+   {
+   }
 }
