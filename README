@@ -17,13 +17,13 @@ Using Quanto:
    files, so that we use the Quanto modified versions.
 
    *********************************************************************
-   *  The current version in this branch is know to work with a        *
-   *  tinyos-2.x tree as of July 10th, 2011.                       *
+   *  The current version in this branch is known to work with a       *
+   *  tinyos-2.x tree as of July 10th, 2011.                           *
    *********************************************************************
   
-   First of all get the newest TinyOS tree:
+   First of all get the following TinyOS tree:
 
-   git clone git://hinrg.cs.jhu.edu/git/tinyos-2.x.svn  tinyos-2.x
+   http://hinrg.cs.jhu.edu/git/?p=tinyos-2.x.svn;a=snapshot;h=e675140ba8739ee7a87989ca395dbf8ec29f9451;sf=tgz
 
  * Currently instrumented are TinyOS 2 platforms that use the MSP430
    and the CC2420 (tested on TelosB and Epic)
